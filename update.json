@@ -1,0 +1,6 @@
+{
+  "versionCode": 8,
+  "versionName": "1.6",
+  "apkUrl": "https://github.com/Zabbel/DieRSApp-Release/releases/download/V1.6/app-debug.apk",
+  "releaseNotes": "Datenbank-Schutz und Update-Funktion implementiert."
+}
