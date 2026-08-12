@@ -1,0 +1,8 @@
+- [ ] Datenbank-Schutz (Migrationen)
+    - [ ] `app/build.gradle.kts` für Schema-Export konfigurieren
+    - [ ] `AppDatabase.kt` anpassen (exportSchema = true, Fallback entfernen)
+- [ ] In-App Update Mechanismus
+    - [ ] Berechtigungen in `AndroidManifest.xml` hinzufügen
+    - [ ] `UpdateManager.kt` erstellen
+    - [ ] `MainActivity.kt` für Update-Check beim Start anpassen
+- [ ] Verifizierung & Build

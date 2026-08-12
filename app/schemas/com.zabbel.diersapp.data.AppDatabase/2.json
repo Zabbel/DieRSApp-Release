@@ -1,0 +1,369 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 2,
+    "identityHash": "2aac1b496d1a7e6a2e38ad14f12bc323",
+    "entities": [
+      {
+        "tableName": "betriebsauftraege",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `auftragsNummer` TEXT NOT NULL, `positionsNummer` TEXT NOT NULL, `kunde` TEXT NOT NULL, `projektNr` TEXT, `titelKurz` TEXT NOT NULL, `beschreibungLang` TEXT NOT NULL, `meldungsNummer` TEXT, `ihNummer` TEXT, `liegeplatz` TEXT, `durchfuehrungsZeitraum` TEXT, `abrechnungsArt` TEXT NOT NULL, `ansprechpartnerName` TEXT, `ansprechpartnerTelefon` TEXT, `ansprechpartnerEmail` TEXT, `guesi` TEXT, `kundenBestellText` TEXT)",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "auftragsNummer",
+            "columnName": "auftragsNummer",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "positionsNummer",
+            "columnName": "positionsNummer",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "kunde",
+            "columnName": "kunde",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "projektNr",
+            "columnName": "projektNr",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "titelKurz",
+            "columnName": "titelKurz",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "beschreibungLang",
+            "columnName": "beschreibungLang",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "meldungsNummer",
+            "columnName": "meldungsNummer",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "ihNummer",
+            "columnName": "ihNummer",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "liegeplatz",
+            "columnName": "liegeplatz",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "durchfuehrungsZeitraum",
+            "columnName": "durchfuehrungsZeitraum",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "abrechnungsArt",
+            "columnName": "abrechnungsArt",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "ansprechpartnerName",
+            "columnName": "ansprechpartnerName",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "ansprechpartnerTelefon",
+            "columnName": "ansprechpartnerTelefon",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "ansprechpartnerEmail",
+            "columnName": "ansprechpartnerEmail",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "guesi",
+            "columnName": "guesi",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "kundenBestellText",
+            "columnName": "kundenBestellText",
+            "affinity": "TEXT",
+            "notNull": false
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "arbeitszeiten",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `auftragId` INTEGER NOT NULL, `datum` INTEGER NOT NULL, `vonUhrzeit` TEXT NOT NULL, `bisUhrzeit` TEXT NOT NULL, `pauseMinuten` INTEGER NOT NULL, `outdoor` TEXT, `beschreibung` TEXT, `ueberstunden25` REAL NOT NULL, `ueberstunden50` REAL NOT NULL, `ueberstunden125` REAL NOT NULL, `fahrtstunden` REAL NOT NULL, `ausloese` REAL NOT NULL, `liegeplatzOverride` TEXT, `reiseVon` TEXT, `reiseBis` TEXT, `rueckreiseVon` TEXT, `rueckreiseBis` TEXT, FOREIGN KEY(`auftragId`) REFERENCES `betriebsauftraege`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "auftragId",
+            "columnName": "auftragId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "datum",
+            "columnName": "datum",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "vonUhrzeit",
+            "columnName": "vonUhrzeit",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "bisUhrzeit",
+            "columnName": "bisUhrzeit",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "pauseMinuten",
+            "columnName": "pauseMinuten",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "outdoor",
+            "columnName": "outdoor",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "beschreibung",
+            "columnName": "beschreibung",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "ueberstunden25",
+            "columnName": "ueberstunden25",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "ueberstunden50",
+            "columnName": "ueberstunden50",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "ueberstunden125",
+            "columnName": "ueberstunden125",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "fahrtstunden",
+            "columnName": "fahrtstunden",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "ausloese",
+            "columnName": "ausloese",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "liegeplatzOverride",
+            "columnName": "liegeplatzOverride",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "reiseVon",
+            "columnName": "reiseVon",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "reiseBis",
+            "columnName": "reiseBis",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "rueckreiseVon",
+            "columnName": "rueckreiseVon",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "rueckreiseBis",
+            "columnName": "rueckreiseBis",
+            "affinity": "TEXT",
+            "notNull": false
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_arbeitszeiten_auftragId",
+            "unique": false,
+            "columnNames": [
+              "auftragId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_arbeitszeiten_auftragId` ON `${TABLE_NAME}` (`auftragId`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "betriebsauftraege",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "auftragId"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "user_settings",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `vorname` TEXT NOT NULL, `nachname` TEXT NOT NULL, `personalnummer` TEXT NOT NULL, `signatureBase64` TEXT, `wochenstunden` REAL NOT NULL, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "vorname",
+            "columnName": "vorname",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "nachname",
+            "columnName": "nachname",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "personalnummer",
+            "columnName": "personalnummer",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "signatureBase64",
+            "columnName": "signatureBase64",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "wochenstunden",
+            "columnName": "wochenstunden",
+            "affinity": "REAL",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "wochenbericht_infos",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`jahr` INTEGER NOT NULL, `kw` INTEGER NOT NULL, `telefonMonat` TEXT NOT NULL, `telefonEuro` REAL NOT NULL, `privatKm` REAL NOT NULL, PRIMARY KEY(`jahr`, `kw`))",
+        "fields": [
+          {
+            "fieldPath": "jahr",
+            "columnName": "jahr",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "kw",
+            "columnName": "kw",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "telefonMonat",
+            "columnName": "telefonMonat",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "telefonEuro",
+            "columnName": "telefonEuro",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "privatKm",
+            "columnName": "privatKm",
+            "affinity": "REAL",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "jahr",
+            "kw"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      }
+    ],
+    "views": [],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '2aac1b496d1a7e6a2e38ad14f12bc323')"
+    ]
+  }
+}
