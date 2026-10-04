@@ -154,10 +154,30 @@ fun PdfPageImage(pdfRenderer: PdfRenderer?, pageIndex: Int) {
             withContext(Dispatchers.IO) {
                 try {
                     val page = renderer.openPage(pageIndex)
-                    // Hohe Auflösung für gutes Zooming (Skalierungsfaktor 2x)
-                    val width = context.resources.displayMetrics.densityDpi / 72 * page.width * 2
-                    val height = context.resources.displayMetrics.densityDpi / 72 * page.height * 2
                     
+                    // Berechne die Skalierung basierend auf der Bildschirmbreite
+                    val screenWidthPixels = context.resources.displayMetrics.widthPixels
+                    val scaleFactor = screenWidthPixels.toFloat() / page.width.toFloat()
+                    
+                    // Multiplikator für etwas mehr Schärfe beim leichten Zoomen (nicht zu hoch!)
+                    val renderScale = 1.5f 
+                    
+                    var width = (page.width * scaleFactor * renderScale).toInt()
+                    var height = (page.height * scaleFactor * renderScale).toInt()
+                    
+                    // Hardware-Limits absichern (Ein Bitmap sollte nicht größer als ein paar MB sein)
+                    val maxDimension = 3000
+                    if (width > maxDimension || height > maxDimension) {
+                        val ratio = width.toFloat() / height.toFloat()
+                        if (width > height) {
+                            width = maxDimension
+                            height = (maxDimension / ratio).toInt()
+                        } else {
+                            height = maxDimension
+                            width = (maxDimension * ratio).toInt()
+                        }
+                    }
+
                     val b = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
                     // Weißen Hintergrund erzwingen, da PDFs transparent sein können
                     b.eraseColor(android.graphics.Color.WHITE)
