@@ -170,18 +170,18 @@ class AuftragViewModel @Inject constructor(
             var targetId = currentAuftragId
 
             if (quickTask != null) {
-                // WICHTIG: Bei System-Zuständen (Urlaub etc.) bleibt die Nummer LEER
-                val nr = if (quickTask.isSystemState) "" else (quickTask.auftragsNummer ?: "")
-                val pos = if (quickTask.isSystemState) "" else (quickTask.positionsNummer ?: "")
-                
-                val existing = repository.findAuftragByNrAndPos(nr, pos)
+                val existing = if (quickTask.isSystemState) {
+                    repository.findSystemAuftrag(quickTask.label)
+                } else {
+                    repository.findAuftragByNrAndPos(quickTask.auftragsNummer ?: "", quickTask.positionsNummer ?: "")
+                }
 
                 targetId = if (existing != null) {
                     existing.id
                 } else {
                     val newSystemAuftrag = Betriebsauftrag(
-                        auftragsNummer = nr,
-                        positionsNummer = pos,
+                        auftragsNummer = if (quickTask.isSystemState) "" else (quickTask.auftragsNummer ?: ""),
+                        positionsNummer = if (quickTask.isSystemState) "" else (quickTask.positionsNummer ?: ""),
                         kunde = "INTERN",
                         titelKurz = quickTask.label,
                         beschreibungLang = quickTask.description,
@@ -288,6 +288,39 @@ class AuftragViewModel @Inject constructor(
     fun saveWochenInfo(jahr: Int, kw: Int, telefonMonat: String, telefonEuro: Double, privatKm: Double) {
         viewModelScope.launch {
             repository.saveWochenInfo(WochenberichtInfo(jahr, kw, telefonMonat, telefonEuro, privatKm))
+        }
+    }
+
+    fun getYearlyStats(year: Int): Flow<StatistikDaten> {
+        val cal = Calendar.getInstance(TimeZone.getTimeZone("UTC")).apply {
+            set(Calendar.YEAR, year)
+            set(Calendar.DAY_OF_YEAR, 1)
+            set(Calendar.HOUR_OF_DAY, 0)
+            set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+        }
+        val startOfYear = cal.timeInMillis
+
+        cal.set(Calendar.YEAR, year + 1)
+        val endOfYear = cal.timeInMillis - 1
+
+        return repository.getArbeitszeitenInPeriod(startOfYear, endOfYear).map { entries ->
+            // Alle Aufträge holen, um zu wissen, was Urlaub und was Krank ist
+            val allOrders = repository.allAuftraegeIncludingInternal.first()
+            
+            val urlaubIds = allOrders.filter { it.kunde == "INTERN" && it.titelKurz == "Urlaub" }.map { it.id }.toSet()
+            val krankIds = allOrders.filter { it.kunde == "INTERN" && it.titelKurz == "Krank" }.map { it.id }.toSet()
+
+            // Eindeutige Tage (Datum) zählen, an denen gebucht wurde
+            val urlaubstage = entries.filter { it.auftragId in urlaubIds }.map { it.datum }.toSet().size
+            val krankheitstage = entries.filter { it.auftragId in krankIds }.map { it.datum }.toSet().size
+
+            StatistikDaten(
+                krankheitstage = krankheitstage,
+                urlaubstage = urlaubstage,
+                jahr = year
+            )
         }
     }
 

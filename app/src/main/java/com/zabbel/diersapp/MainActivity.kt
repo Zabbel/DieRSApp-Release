@@ -48,6 +48,7 @@ import com.zabbel.diersapp.ui.screens.CameraCaptureScreen
 import com.zabbel.diersapp.ui.screens.CropScreen
 import com.zabbel.diersapp.ui.screens.MontageberichtScreen
 import com.zabbel.diersapp.ui.screens.SettingsScreen
+import com.zabbel.diersapp.ui.screens.StatistikScreen
 import com.zabbel.diersapp.ui.screens.WochenberichtScreen
 import com.zabbel.diersapp.ui.theme.DieRSAppTheme
 import com.zabbel.diersapp.util.OCRService
@@ -252,6 +253,7 @@ fun AppContent(startScreen: NextScreen, auftragViewModel: AuftragViewModel) {
                         onAuftragClick = { id -> navController.navigate("auftrag_detail/$id") },
                         onGenerateWeeklyReport = { navController.navigate("weekly_report") },
                         onMontagebericht = { navController.navigate("montagebericht") },
+                        onNavigateToStatistik = { navController.navigate("statistik") },
                         onNavigateToSettings = { navController.navigate("user_settings") }
                     )
                 }
@@ -414,6 +416,7 @@ fun AppContent(startScreen: NextScreen, auftragViewModel: AuftragViewModel) {
                     }
                 }
                 composable("weekly_report") { WochenberichtScreen(viewModel = auftragViewModel, onBack = { navController.popBackStack() }) }
+                composable("statistik") { StatistikScreen(viewModel = auftragViewModel, onBack = { navController.popBackStack() }) }
                 composable("montagebericht") {
                     MontageberichtScreen(
                         viewModel = auftragViewModel,

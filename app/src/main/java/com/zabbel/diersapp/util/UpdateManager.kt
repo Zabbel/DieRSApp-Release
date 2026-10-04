@@ -70,8 +70,23 @@ object UpdateManager {
     private fun downloadAndInstallApk(context: Context, apkUrl: String) {
         GlobalScope.launch(Dispatchers.IO) {
             try {
-                val url = URL(apkUrl)
-                val connection = url.openConnection() as HttpURLConnection
+                var currentUrl = apkUrl
+                var connection: HttpURLConnection
+                var responseCode: Int
+                
+                // Manuelles Folgen von Redirects (wichtig für GitHub Releases -> S3)
+                do {
+                    val url = URL(currentUrl)
+                    connection = url.openConnection() as HttpURLConnection
+                    connection.instanceFollowRedirects = true
+                    responseCode = connection.responseCode
+                    if (responseCode == HttpURLConnection.HTTP_MOVED_PERM || responseCode == HttpURLConnection.HTTP_MOVED_TEMP) {
+                        currentUrl = connection.getHeaderField("Location")
+                    } else {
+                        break
+                    }
+                } while (true)
+
                 val apkFile = File(context.cacheDir, "update.apk")
                 
                 connection.inputStream.use { input ->

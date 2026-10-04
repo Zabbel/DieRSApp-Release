@@ -15,14 +15,14 @@ ksp {
 
 android {
     namespace = "com.zabbel.diersapp"
-    compileSdk = 35
+    compileSdk = 37
 
     defaultConfig {
         applicationId = "com.zabbel.diersapp"
         minSdk = 26
-        targetSdk = 35
-        versionCode = 7
-        versionName = "1.5"
+        targetSdk = 37
+        versionCode = 9
+        versionName = "1.7"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -104,7 +104,6 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
-    androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)

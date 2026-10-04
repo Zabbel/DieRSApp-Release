@@ -45,6 +45,10 @@ class AuftragRepository @Inject constructor(
         return databaseInstance.value?.auftragDao()?.findAuftragByNrAndPos(nr, pos)
     }
 
+    suspend fun findSystemAuftrag(titel: String): Betriebsauftrag? {
+        return databaseInstance.value?.auftragDao()?.findSystemAuftrag(titel)
+    }
+
     suspend fun addAuftrag(auftrag: Betriebsauftrag): Long {
         return databaseInstance.value?.auftragDao()?.insertAuftrag(auftrag) ?: -1L
     }

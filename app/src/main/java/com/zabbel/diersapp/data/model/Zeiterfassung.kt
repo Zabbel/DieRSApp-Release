@@ -216,8 +216,18 @@ fun TimeTrackingDialog(
     var expanded by remember { mutableStateOf(false) }
     val showEditWarning = remember { mutableStateOf(false) }
 
-    val autoFoundEntry = remember(selectedDate, selectedAuftragId, currentDayView) {
-        currentDayView.find { it.auftragId == selectedAuftragId && it.id != (existingEntry?.id ?: -1L) }
+    val autoFoundEntry = remember(selectedDate, selectedAuftragId, currentDayView, effectiveLiegeplatz) {
+        currentDayView.find { entry -> 
+            val isSameAuftrag = entry.auftragId == selectedAuftragId
+            val isNotCurrentlyEdited = entry.id != (existingEntry?.id ?: -1L)
+            
+            // Wir prüfen den Liegeplatz des Eintrags
+            val auftragOfEntry = availableAuftraege.find { it.id == entry.auftragId }
+            val entryLiegeplatz = entry.liegeplatzOverride ?: auftragOfEntry?.liegeplatz ?: ""
+            
+            // Wenn Auftrag UND Liegeplatz übereinstimmen, laden wir ihn
+            isSameAuftrag && isNotCurrentlyEdited && (entryLiegeplatz.trim().equals(effectiveLiegeplatz.trim(), ignoreCase = true))
+        }
     }
 
     LaunchedEffect(autoFoundEntry) {
@@ -249,6 +259,23 @@ fun TimeTrackingDialog(
     val isTravelTimeValid = travelOption == 0 || (reiseStartPickerState.hour * 60 + reiseStartPickerState.minute) < (reiseEndPickerState.hour * 60 + reiseEndPickerState.minute)
     val isReturnTimeValid = travelOption != 2 || (rueckStartPickerState.hour * 60 + rueckStartPickerState.minute) < (rueckEndPickerState.hour * 60 + rueckEndPickerState.minute)
 
+    val hasOverlap = remember(startPickerState.hour, startPickerState.minute, endPickerState.hour, endPickerState.minute, currentDayView, existingEntry, autoFoundEntry) {
+        val newStart = startPickerState.hour * 60 + startPickerState.minute
+        val newEnd = endPickerState.hour * 60 + endPickerState.minute
+        val ignoreId = existingEntry?.id ?: autoFoundEntry?.id ?: -1L
+
+        currentDayView.any { entry ->
+            if (entry.id == ignoreId && ignoreId != -1L) return@any false
+            val partsV = entry.vonUhrzeit.split(":")
+            val partsB = entry.bisUhrzeit.split(":")
+            if (partsV.size != 2 || partsB.size != 2) return@any false
+            val eStart = partsV[0].toInt() * 60 + partsV[1].toInt()
+            val eEnd = partsB[0].toInt() * 60 + partsB[1].toInt()
+            
+            newStart < eEnd && eStart < newEnd
+        }
+    }
+
     AlertDialog(
         onDismissRequest = { /* Ignorieren, damit man nicht versehentlich schließt */ },
         properties = androidx.compose.ui.window.DialogProperties(
@@ -260,6 +287,7 @@ fun TimeTrackingDialog(
                 enabled = (selectedAuftragId != 0L || currentQuickTask != null) && 
                          beschreibung.isNotBlank() && 
                          currentUsedLines <= maxLines &&
+                         !hasOverlap &&
                          isWorkTimeValid && isTravelTimeValid && isReturnTimeValid && 
                          isDateAllowed && (!isMontageLocation || travelOption > 0 || fahrtstundenStr.isNotBlank()),
                 onClick = {
@@ -337,6 +365,14 @@ fun TimeTrackingDialog(
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     OutlinedTextField(value = formatTime(startPickerState.hour, startPickerState.minute), onValueChange = {}, label = { Text("Von") }, modifier = Modifier.weight(1f), readOnly = true, trailingIcon = { IconButton(onClick = { showStartPicker.value = true }) { Icon(Icons.Default.Schedule, null) } })
                     OutlinedTextField(value = formatTime(endPickerState.hour, endPickerState.minute), onValueChange = {}, label = { Text("Bis") }, modifier = Modifier.weight(1f), readOnly = true, trailingIcon = { IconButton(onClick = { showEndPicker.value = true }) { Icon(Icons.Default.Schedule, null) } })
+                }
+                if (hasOverlap) {
+                    Text(
+                        text = "Überschneidung! Diese Uhrzeit ist bereits belegt.",
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.labelSmall,
+                        modifier = Modifier.padding(start = 4.dp)
+                    )
                 }
                 OutlinedTextField(
                     value = beschreibung,

@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Assignment
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -18,6 +19,7 @@ import androidx.compose.ui.Modifier
 fun AuftragsuebersichtTopAppBar(
     onGenerateWeeklyReport: () -> Unit,
     onMontagebericht: () -> Unit,
+    onNavigateToStatistik: () -> Unit,
     onNavigateToSettings: () -> Unit
 ) {
     var showMenu by remember { mutableStateOf(false) }
@@ -56,6 +58,16 @@ fun AuftragsuebersichtTopAppBar(
                         onClick = {
                             showMenu = false
                             onMontagebericht()
+                        }
+                    )
+                    DropdownMenuItem(
+                        text = { Text("Statistik") },
+                        leadingIcon = {
+                            Icon(Icons.Default.Info, contentDescription = null)
+                        },
+                        onClick = {
+                            showMenu = false
+                            onNavigateToStatistik()
                         }
                     )
                     HorizontalDivider()
