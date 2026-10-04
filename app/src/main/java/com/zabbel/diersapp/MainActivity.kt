@@ -47,6 +47,7 @@ import com.zabbel.diersapp.ui.screens.BestellungScreen
 import com.zabbel.diersapp.ui.screens.CameraCaptureScreen
 import com.zabbel.diersapp.ui.screens.CropScreen
 import com.zabbel.diersapp.ui.screens.MontageberichtScreen
+import com.zabbel.diersapp.ui.screens.PdfViewerScreen
 import com.zabbel.diersapp.ui.screens.SettingsScreen
 import com.zabbel.diersapp.ui.screens.StatistikScreen
 import com.zabbel.diersapp.ui.screens.WochenberichtScreen
@@ -82,7 +83,8 @@ class MainActivity : FragmentActivity() {
         setContent {
             DieRSAppTheme {
                 val nextScreen by splashViewModel.nextScreenState.collectAsStateWithLifecycle()
-                AppContent(startScreen = nextScreen, auftragViewModel = auftragViewModel)
+                val appStateViewModel: com.zabbel.diersapp.viewmodel.AppStateViewModel by viewModels()
+                AppContent(startScreen = nextScreen, auftragViewModel = auftragViewModel, appStateViewModel = appStateViewModel)
             }
         }
     }
@@ -90,9 +92,15 @@ class MainActivity : FragmentActivity() {
     override fun onTrimMemory(level: Int) {
         super.onTrimMemory(level)
         if (level == TRIM_MEMORY_UI_HIDDEN) {
-            clearCacheImages()
-            finishAffinity()
-            exitProcess(0)
+            val appStateViewModel: com.zabbel.diersapp.viewmodel.AppStateViewModel by viewModels()
+            if (!appStateViewModel.isIntentionalBackground.value) {
+                clearCacheImages()
+                finishAffinity()
+                exitProcess(0)
+            } else {
+                // Set the flag back to false for the next time
+                appStateViewModel.setIntentionalBackground(false)
+            }
         }
     }
 
@@ -116,7 +124,7 @@ class MainActivity : FragmentActivity() {
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun AppContent(startScreen: NextScreen, auftragViewModel: AuftragViewModel) {
+fun AppContent(startScreen: NextScreen, auftragViewModel: AuftragViewModel, appStateViewModel: com.zabbel.diersapp.viewmodel.AppStateViewModel = androidx.lifecycle.viewmodel.compose.viewModel()) {
     val navController = rememberNavController()
 
     if (startScreen == NextScreen.LOADING) {
@@ -415,12 +423,24 @@ fun AppContent(startScreen: NextScreen, auftragViewModel: AuftragViewModel) {
                         )
                     }
                 }
-                composable("weekly_report") { WochenberichtScreen(viewModel = auftragViewModel, onBack = { navController.popBackStack() }) }
+                composable("weekly_report") { WochenberichtScreen(viewModel = auftragViewModel, navController = navController, onBack = { navController.popBackStack() }) }
                 composable("statistik") { StatistikScreen(viewModel = auftragViewModel, onBack = { navController.popBackStack() }) }
                 composable("montagebericht") {
                     MontageberichtScreen(
                         viewModel = auftragViewModel,
+                        navController = navController,
                         onBack = { navController.popBackStack() })
+                }
+                composable(
+                    "pdf_viewer/{uri}",
+                    arguments = listOf(navArgument("uri") { type = NavType.StringType })
+                ) { backStackEntry ->
+                    val uri = backStackEntry.arguments?.getString("uri") ?: ""
+                    PdfViewerScreen(
+                        uriString = uri,
+                        onBack = { navController.popBackStack() },
+                        onShareReady = { appStateViewModel.setIntentionalBackground(true) }
+                    )
                 }
                 composable("bestellung/{auftragId}", arguments = listOf(navArgument("auftragId") { type = NavType.LongType })) { backStackEntry ->
                     val id = backStackEntry.arguments?.getLong("auftragId") ?: 0L

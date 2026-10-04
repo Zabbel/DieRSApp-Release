@@ -24,11 +24,14 @@ import com.zabbel.diersapp.util.MontageReportGenerator
 import com.zabbel.diersapp.viewmodel.AuftragViewModel
 import java.text.SimpleDateFormat
 import java.util.*
+import android.net.Uri
+import androidx.navigation.NavController
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MontageberichtScreen(
     viewModel: AuftragViewModel,
+    navController: NavController,
     onBack: () -> Unit
 ) {
     val context = LocalContext.current
@@ -118,11 +121,8 @@ fun MontageberichtScreen(
                                 "${context.packageName}.provider",
                                 file
                             )
-                            val intent = android.content.Intent(android.content.Intent.ACTION_VIEW).apply {
-                                setDataAndType(uri, "application/pdf")
-                                addFlags(android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                            }
-                            context.startActivity(android.content.Intent.createChooser(intent, "PDF öffnen"))
+                            val encodedUri = Uri.encode(uri.toString())
+                            navController.navigate("pdf_viewer/$encodedUri")
                         }
                     },
                     icon = { Icon(if (hasLineOverflow) Icons.Default.Error else Icons.Default.PictureAsPdf, null) },
