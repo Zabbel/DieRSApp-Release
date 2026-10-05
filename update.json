@@ -1,6 +1,6 @@
 {
-  "versionCode": 11,
-  "versionName": "1.9",
-  "apkUrl": "https://github.com/Zabbel/DieRSApp-Release/releases/download/V1.9/app-debug.apk",
-  "releaseNotes": "Eine Archiv-Funktion hinzugefügt!"
+  "versionCode": 12,
+  "versionName": "2.0",
+  "apkUrl": "https://github.com/Zabbel/DieRSApp-Release/releases/download/V2.0/app-debug.apk",
+  "releaseNotes": "Eine Archiv-Funktion hinzugefügt! Ausserdem die Update-Funktion verfeinert!"
 }
