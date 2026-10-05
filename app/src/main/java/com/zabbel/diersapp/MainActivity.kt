@@ -49,6 +49,7 @@ import com.zabbel.diersapp.ui.screens.CropScreen
 import com.zabbel.diersapp.ui.screens.MontageberichtScreen
 import com.zabbel.diersapp.ui.screens.PdfViewerScreen
 import com.zabbel.diersapp.ui.screens.SettingsScreen
+import com.zabbel.diersapp.ui.screens.ArchivScreen
 import com.zabbel.diersapp.ui.screens.StatistikScreen
 import com.zabbel.diersapp.ui.screens.WochenberichtScreen
 import com.zabbel.diersapp.ui.theme.DieRSAppTheme
@@ -201,7 +202,7 @@ fun AppContent(startScreen: NextScreen, auftragViewModel: AuftragViewModel, appS
             )
 
             // -----------------------------------------------------------------
-            // DEIN BESTEHENDER TEXT (Bleibt völlig unangetastet)
+            // DEIN BESTEHENDER TEXT & UPDATE LOGIK
             // -----------------------------------------------------------------
             Column(
                 modifier = Modifier
@@ -210,15 +211,55 @@ fun AppContent(startScreen: NextScreen, auftragViewModel: AuftragViewModel, appS
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
-                Text(
-                    text = "Version $versionName",
-                    color = Color.Gray.copy(alpha = 0.5f),
-                    style = MaterialTheme.typography.labelMedium
-                )
-                Text(
-                    text = "©2025 EmGee Apps",
-                    color = Color.Gray.copy(alpha = 0.6f),
-                    style = MaterialTheme.typography.labelLarge
+                val updateState by com.zabbel.diersapp.util.UpdateManager.updateState.collectAsStateWithLifecycle()
+
+                if (updateState is com.zabbel.diersapp.util.UpdateState.Downloading) {
+                    val progress = (updateState as com.zabbel.diersapp.util.UpdateState.Downloading).progress
+                    Text(
+                        text = "Update wird heruntergeladen... ${(progress * 100).toInt()}%",
+                        color = Color.White,
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                    LinearProgressIndicator(
+                        progress = { progress },
+                        modifier = Modifier
+                            .fillMaxWidth(0.6f)
+                            .padding(top = 8.dp),
+                        color = MaterialTheme.colorScheme.primary,
+                        trackColor = Color.DarkGray
+                    )
+                } else {
+                    Text(
+                        text = "Version $versionName",
+                        color = Color.Gray.copy(alpha = 0.5f),
+                        style = MaterialTheme.typography.labelMedium
+                    )
+                    Text(
+                        text = "©2025 EmGee Apps",
+                        color = Color.Gray.copy(alpha = 0.6f),
+                        style = MaterialTheme.typography.labelLarge
+                    )
+                }
+            }
+
+            // Update Dialog Overlay
+            val updateStateForDialog by com.zabbel.diersapp.util.UpdateManager.updateState.collectAsStateWithLifecycle()
+            if (updateStateForDialog is com.zabbel.diersapp.util.UpdateState.UpdateAvailable) {
+                val info = updateStateForDialog as com.zabbel.diersapp.util.UpdateState.UpdateAvailable
+                AlertDialog(
+                    onDismissRequest = { com.zabbel.diersapp.util.UpdateManager.skipUpdate() },
+                    title = { Text("Update verfügbar") },
+                    text = { Text("Version ${info.versionName} ist verfügbar.\n\nÄnderungen:\n${info.releaseNotes}") },
+                    confirmButton = {
+                        Button(onClick = { com.zabbel.diersapp.util.UpdateManager.startDownload(context, info.apkUrl) }) {
+                            Text("Update")
+                        }
+                    },
+                    dismissButton = {
+                        TextButton(onClick = { com.zabbel.diersapp.util.UpdateManager.skipUpdate() }) {
+                            Text("Später")
+                        }
+                    }
                 )
             }
         }
@@ -262,6 +303,7 @@ fun AppContent(startScreen: NextScreen, auftragViewModel: AuftragViewModel, appS
                         onGenerateWeeklyReport = { navController.navigate("weekly_report") },
                         onMontagebericht = { navController.navigate("montagebericht") },
                         onNavigateToStatistik = { navController.navigate("statistik") },
+                        onNavigateToArchiv = { navController.navigate("archiv") },
                         onNavigateToSettings = { navController.navigate("user_settings") }
                     )
                 }
@@ -440,6 +482,12 @@ fun AppContent(startScreen: NextScreen, auftragViewModel: AuftragViewModel, appS
                         uriString = uri,
                         onBack = { navController.popBackStack() },
                         onShareReady = { appStateViewModel.setIntentionalBackground(true) }
+                    )
+                }
+                composable("archiv") {
+                    ArchivScreen(
+                        onBack = { navController.popBackStack() },
+                        onOpenPdf = { encodedUri -> navController.navigate("pdf_viewer/$encodedUri") }
                     )
                 }
                 composable("bestellung/{auftragId}", arguments = listOf(navArgument("auftragId") { type = NavType.LongType })) { backStackEntry ->

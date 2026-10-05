@@ -33,6 +33,7 @@ fun AuftragsuebersichtScreen(
     onGenerateWeeklyReport: () -> Unit,
     onMontagebericht: () -> Unit,
     onNavigateToStatistik: () -> Unit,
+    onNavigateToArchiv: () -> Unit,
     onNavigateToSettings: () -> Unit
 ) {
     val auftraege by viewModel.auftraege.collectAsStateWithLifecycle()
@@ -66,6 +67,7 @@ fun AuftragsuebersichtScreen(
                 onGenerateWeeklyReport = onGenerateWeeklyReport,
                 onMontagebericht = onMontagebericht,
                 onNavigateToStatistik = onNavigateToStatistik,
+                onNavigateToArchiv = onNavigateToArchiv,
                 onNavigateToSettings = onNavigateToSettings
             )
         },

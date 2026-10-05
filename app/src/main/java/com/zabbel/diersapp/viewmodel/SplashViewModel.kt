@@ -34,12 +34,13 @@ class SplashViewModel @Inject constructor(
     val nextScreenState: StateFlow<NextScreen> = combine(
         _isBasicInitializationDone,
         appSettingsDataStore.isFirstLaunch,
-        appSettingsDataStore.pinHash
-    ) { isInitialized, isFirstLaunch, pinHash ->
-        if (!isInitialized) {
+        appSettingsDataStore.pinHash,
+        com.zabbel.diersapp.util.UpdateManager.updateState
+    ) { isInitialized, isFirstLaunch, pinHash, updateState ->
+        if (!isInitialized || updateState != com.zabbel.diersapp.util.UpdateState.Finished) {
             NextScreen.LOADING
         } else {
-            if (isFirstLaunch || pinHash == null) { // Wenn erster Start ODER keine PIN gesetzt ist
+            if (isFirstLaunch || pinHash == null) { 
                 NextScreen.PIN_SETUP
             } else {
                 NextScreen.PIN_LOGIN

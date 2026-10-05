@@ -1,6 +1,5 @@
 package com.zabbel.diersapp.util
 
-import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
@@ -8,6 +7,9 @@ import android.os.Build
 import androidx.core.content.FileProvider
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
@@ -16,15 +18,32 @@ import java.io.FileOutputStream
 import java.net.HttpURLConnection
 import java.net.URL
 
+sealed class UpdateState {
+    object Idle : UpdateState()
+    object Checking : UpdateState()
+    data class UpdateAvailable(val versionName: String, val apkUrl: String, val releaseNotes: String) : UpdateState()
+    data class Downloading(val progress: Float) : UpdateState()
+    object Finished : UpdateState() // Fertig geprüft (nichts gefunden, abgelehnt oder Installation gestartet)
+}
+
 object UpdateManager {
 
-    private const val UPDATE_JSON_URL = "https://raw.githubusercontent.com/Zabbel/DieRSApp-Release/main/update.json"
+    private const val UPDATE_JSON_URL = "https://raw.githubusercontent.com/Zabbel/DieRSApp-Release/refs/heads/master/update.json"
+
+    private val _updateState = MutableStateFlow<UpdateState>(UpdateState.Idle)
+    val updateState: StateFlow<UpdateState> = _updateState.asStateFlow()
 
     fun checkForUpdates(context: Context) {
+        if (_updateState.value is UpdateState.Checking || _updateState.value is UpdateState.Downloading) return
+        _updateState.value = UpdateState.Checking
+
         GlobalScope.launch(Dispatchers.IO) {
             try {
                 val url = URL(UPDATE_JSON_URL)
                 val connection = url.openConnection() as HttpURLConnection
+                connection.connectTimeout = 5000
+                connection.readTimeout = 5000
+                
                 val jsonString = connection.inputStream.bufferedReader().use { it.readText() }
                 val json = JSONObject(jsonString)
 
@@ -46,28 +65,23 @@ object UpdateManager {
                 }
 
                 if (serverVersionCode > currentVersionCode) {
-                    withContext(Dispatchers.Main) {
-                        showUpdateDialog(context, serverVersionName, apkUrl, releaseNotes)
-                    }
+                    _updateState.value = UpdateState.UpdateAvailable(serverVersionName, apkUrl, releaseNotes)
+                } else {
+                    _updateState.value = UpdateState.Finished
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
+                _updateState.value = UpdateState.Finished
             }
         }
     }
 
-    private fun showUpdateDialog(context: Context, versionName: String, apkUrl: String, releaseNotes: String) {
-        AlertDialog.Builder(context)
-            .setTitle("Update verfügbar")
-            .setMessage("Version $versionName ist verfügbar.\n\nÄnderungen:\n$releaseNotes\n\nMöchtest du das Update jetzt installieren?")
-            .setPositiveButton("Update") { _, _ ->
-                downloadAndInstallApk(context, apkUrl)
-            }
-            .setNegativeButton("Später", null)
-            .show()
+    fun skipUpdate() {
+        _updateState.value = UpdateState.Finished
     }
 
-    private fun downloadAndInstallApk(context: Context, apkUrl: String) {
+    fun startDownload(context: Context, apkUrl: String) {
+        _updateState.value = UpdateState.Downloading(0f)
         GlobalScope.launch(Dispatchers.IO) {
             try {
                 var currentUrl = apkUrl
@@ -87,19 +101,32 @@ object UpdateManager {
                     }
                 } while (true)
 
+                val fileLength = connection.contentLength
                 val apkFile = File(context.cacheDir, "update.apk")
                 
                 connection.inputStream.use { input ->
                     FileOutputStream(apkFile).use { output ->
-                        input.copyTo(output)
+                        val data = ByteArray(4096)
+                        var total: Long = 0
+                        var count: Int
+                        while (input.read(data).also { count = it } != -1) {
+                            total += count.toLong()
+                            if (fileLength > 0) {
+                                val progress = (total * 100 / fileLength).toFloat() / 100f
+                                _updateState.value = UpdateState.Downloading(progress)
+                            }
+                            output.write(data, 0, count)
+                        }
                     }
                 }
 
+                _updateState.value = UpdateState.Finished
                 withContext(Dispatchers.Main) {
                     installApk(context, apkFile)
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
+                _updateState.value = UpdateState.Finished
             }
         }
     }

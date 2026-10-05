@@ -21,8 +21,8 @@ android {
         applicationId = "com.zabbel.diersapp"
         minSdk = 26
         targetSdk = 37
-        versionCode = 9
-        versionName = "1.7"
+        versionCode = 12
+        versionName = "2.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
