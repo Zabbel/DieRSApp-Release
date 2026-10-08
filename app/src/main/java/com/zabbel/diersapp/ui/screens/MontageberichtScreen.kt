@@ -130,7 +130,7 @@ fun MontageberichtScreen(
                         
                         val kundenUnterschrift = allSignatures.find { 
                             it.auftragId == selectedAuftrag!!.id && it.jahr == currentJahr && it.kw == currentKw 
-                        }?.signatureBase64
+                        }
 
                         val file = MontageReportGenerator.erzeugeMontageberichtPdf(
                             context = context,
@@ -141,7 +141,8 @@ fun MontageberichtScreen(
                             vorname = userSettings?.vorname ?: "",
                             nachname = userSettings?.nachname ?: "",
                             signatureBase64 = userSettings?.signatureBase64,
-                            kundenSignatureBase64 = kundenUnterschrift
+                            kundenSignatureBase64 = kundenUnterschrift?.signatureBase64,
+                            kundenName = kundenUnterschrift?.unterzeichnerName
                         )
 
                         if (file != null) {

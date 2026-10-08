@@ -7,5 +7,6 @@ data class KundenUnterschrift(
     val auftragId: Long,
     val jahr: Int,
     val kw: Int,
-    val signatureBase64: String
+    val signatureBase64: String,
+    val unterzeichnerName: String? = null // Nullable für abwärtskompatibilität der existierenden Einträge
 )

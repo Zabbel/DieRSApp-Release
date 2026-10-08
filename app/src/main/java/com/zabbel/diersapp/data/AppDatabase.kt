@@ -11,10 +11,11 @@ import net.zetetic.database.sqlcipher.SQLiteDatabase
 
 @Database(
     entities = [Betriebsauftrag::class, Arbeitszeit::class, UserSettings::class, WochenberichtInfo::class, KundenUnterschrift::class],
-    version = 3,
+    version = 4,
     exportSchema = true,
     autoMigrations = [
-        androidx.room.AutoMigration(from = 2, to = 3)
+        androidx.room.AutoMigration(from = 2, to = 3),
+        androidx.room.AutoMigration(from = 3, to = 4)
     ]
 )
 abstract class AppDatabase : RoomDatabase() {

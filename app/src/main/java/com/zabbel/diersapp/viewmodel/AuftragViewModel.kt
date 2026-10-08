@@ -396,9 +396,9 @@ class AuftragViewModel @Inject constructor(
     val allKundenUnterschriften: StateFlow<List<KundenUnterschrift>> = repository.getAllKundenUnterschriften()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    fun saveKundenUnterschrift(auftragId: Long, jahr: Int, kw: Int, base64: String) {
+    fun saveKundenUnterschrift(auftragId: Long, jahr: Int, kw: Int, base64: String, name: String) {
         viewModelScope.launch {
-            repository.saveKundenUnterschrift(KundenUnterschrift(auftragId, jahr, kw, base64))
+            repository.saveKundenUnterschrift(KundenUnterschrift(auftragId, jahr, kw, base64, name))
         }
     }
 

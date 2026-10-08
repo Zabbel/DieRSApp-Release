@@ -28,7 +28,8 @@ object MontageReportGenerator {
         vorname: String,
         nachname: String,
         signatureBase64: String? = null,
-        kundenSignatureBase64: String? = null
+        kundenSignatureBase64: String? = null,
+        kundenName: String? = null
     ): File? {
         val pdfDocument = PdfDocument()
         val paint = Paint().apply {
@@ -253,6 +254,10 @@ object MontageReportGenerator {
                 if (sigBitmap != null) {
                     // Position der Kundenunterschrift (weiter links auf gleicher Höhe)
                     canvas.drawBitmap(sigBitmap, null, Rect(20, 491, 140, 551), paint)
+                }
+                if (!kundenName.isNullOrBlank()) {
+                    paint.textSize = 9f
+                    canvas.drawText(kundenName, 20f, 565f, paint)
                 }
             } catch (_: Exception) {}
         }

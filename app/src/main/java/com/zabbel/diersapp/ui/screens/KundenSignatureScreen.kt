@@ -27,6 +27,7 @@ fun KundenSignatureScreen(
     onSaved: () -> Unit
 ) {
     var signaturePaths by remember { mutableStateOf(listOf<Path>()) }
+    var unterzeichnerName by remember { mutableStateOf("") }
     val scope = rememberCoroutineScope()
 
     Scaffold(
@@ -71,12 +72,22 @@ fun KundenSignatureScreen(
             }
 
             Spacer(modifier = Modifier.height(8.dp))
+            OutlinedTextField(
+                value = unterzeichnerName,
+                onValueChange = { unterzeichnerName = it },
+                label = { Text("Name in Druckbuchstaben") },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true,
+                isError = unterzeichnerName.isBlank(),
+                supportingText = { if (unterzeichnerName.isBlank()) Text("Name ist ein Pflichtfeld!") }
+            )
+
             Text("Bitte unterschreiben Sie hier:", style = MaterialTheme.typography.bodyMedium)
 
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(250.dp)
+                    .height(200.dp) // Etwas kleiner für den Namen
             ) {
                 SignaturePad(
                     initialSignatureBase64 = null,
@@ -91,16 +102,16 @@ fun KundenSignatureScreen(
 
             Button(
                 onClick = {
-                    if (signaturePaths.isNotEmpty()) {
+                    if (signaturePaths.isNotEmpty() && unterzeichnerName.isNotBlank()) {
                         scope.launch {
                             val finalSignature = bitmapToBase64(createBitmapFromPaths(signaturePaths, 0, 0))
-                            viewModel.saveKundenUnterschrift(auftrag.id, jahr, kw, finalSignature)
+                            viewModel.saveKundenUnterschrift(auftrag.id, jahr, kw, finalSignature, unterzeichnerName.trim())
                             onSaved()
                         }
                     }
                 },
                 modifier = Modifier.fillMaxWidth(),
-                enabled = signaturePaths.isNotEmpty(),
+                enabled = signaturePaths.isNotEmpty() && unterzeichnerName.isNotBlank(),
                 colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary)
             ) {
                 Text("Unterschrift speichern")
