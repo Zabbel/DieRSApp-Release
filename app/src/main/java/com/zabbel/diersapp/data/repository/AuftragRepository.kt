@@ -4,6 +4,7 @@ import android.content.Context
 import com.zabbel.diersapp.data.AppDatabase
 import com.zabbel.diersapp.data.model.Arbeitszeit
 import com.zabbel.diersapp.data.model.Betriebsauftrag
+import com.zabbel.diersapp.data.model.KundenUnterschrift
 import com.zabbel.diersapp.data.model.UserSettings
 import com.zabbel.diersapp.data.model.WochenberichtInfo
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -97,5 +98,23 @@ class AuftragRepository @Inject constructor(
 
     suspend fun saveWochenInfo(info: WochenberichtInfo) {
         databaseInstance.value?.wochenInfoDao()?.upsertInfo(info)
+    }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    fun getKundenUnterschrift(auftragId: Long, jahr: Int, kw: Int): Flow<KundenUnterschrift?> {
+        return databaseInstance.flatMapLatest { db ->
+            db?.unterschriftDao()?.getUnterschrift(auftragId, jahr, kw) ?: emptyFlow()
+        }
+    }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    fun getAllKundenUnterschriften(): Flow<List<KundenUnterschrift>> {
+        return databaseInstance.flatMapLatest { db ->
+            db?.unterschriftDao()?.getAllUnterschriften() ?: emptyFlow()
+        }
+    }
+
+    suspend fun saveKundenUnterschrift(unterschrift: KundenUnterschrift) {
+        databaseInstance.value?.unterschriftDao()?.upsertUnterschrift(unterschrift)
     }
 }

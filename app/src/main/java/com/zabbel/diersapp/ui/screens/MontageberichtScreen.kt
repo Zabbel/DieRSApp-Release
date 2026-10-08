@@ -88,11 +88,34 @@ fun MontageberichtScreen(
         showDialog = true
     }
 
+    val allSignatures by viewModel.allKundenUnterschriften.collectAsStateWithLifecycle()
+    val currentJahr = selectedCalendar.get(Calendar.YEAR)
+    val currentKw = selectedCalendar.get(Calendar.WEEK_OF_YEAR)
+    
+    val hasKundenUnterschrift = remember(allSignatures, selectedAuftrag, currentJahr, currentKw) {
+        selectedAuftrag != null && allSignatures.any { 
+            it.auftragId == selectedAuftrag!!.id && it.jahr == currentJahr && it.kw == currentKw 
+        }
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text("Montagebericht") },
                 navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, null) } },
+                actions = {
+                    if (selectedAuftrag != null && filteredWorkHours.isNotEmpty()) {
+                        IconButton(onClick = {
+                            navController.navigate("kunden_signature/${selectedAuftrag!!.id}/$currentJahr/$currentKw")
+                        }) {
+                            Icon(
+                                Icons.Default.Draw, 
+                                contentDescription = "Kunde unterschreiben lassen",
+                                tint = if (hasKundenUnterschrift) Color(0xFF4CAF50) else MaterialTheme.colorScheme.error
+                            )
+                        }
+                    }
+                },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primaryContainer,
                     titleContentColor = MaterialTheme.colorScheme.primary
@@ -104,15 +127,21 @@ fun MontageberichtScreen(
                 ExtendedFloatingActionButton(
                     onClick = {
                         if (!canExport) return@ExtendedFloatingActionButton
+                        
+                        val kundenUnterschrift = allSignatures.find { 
+                            it.auftragId == selectedAuftrag!!.id && it.jahr == currentJahr && it.kw == currentKw 
+                        }?.signatureBase64
+
                         val file = MontageReportGenerator.erzeugeMontageberichtPdf(
                             context = context,
-                            kalenderWoche = selectedCalendar.get(Calendar.WEEK_OF_YEAR),
-                            jahr = selectedCalendar.get(Calendar.YEAR),
+                            kalenderWoche = currentKw,
+                            jahr = currentJahr,
                             daten = filteredWorkHours,
                             selectedAuftrag = selectedAuftrag!!,
                             vorname = userSettings?.vorname ?: "",
                             nachname = userSettings?.nachname ?: "",
-                            signatureBase64 = userSettings?.signatureBase64
+                            signatureBase64 = userSettings?.signatureBase64,
+                            kundenSignatureBase64 = kundenUnterschrift
                         )
 
                         if (file != null) {

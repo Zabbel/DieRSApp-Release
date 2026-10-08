@@ -27,7 +27,8 @@ object MontageReportGenerator {
         selectedAuftrag: Betriebsauftrag,
         vorname: String,
         nachname: String,
-        signatureBase64: String? = null
+        signatureBase64: String? = null,
+        kundenSignatureBase64: String? = null
     ): File? {
         val pdfDocument = PdfDocument()
         val paint = Paint().apply {
@@ -159,7 +160,7 @@ object MontageReportGenerator {
                     val nWork = maxOf(0.0, split.normal - toSubtract).also { toSubtract = maxOf(0.0, toSubtract - split.normal) }
                     val u25Work = maxOf(0.0, split.ue25 - toSubtract).also { toSubtract = maxOf(0.0, toSubtract - split.ue25) }
                     val u50Work = maxOf(0.0, split.ue50 - toSubtract).also { toSubtract = maxOf(0.0, toSubtract - split.ue50) }
-                    val u150Work = maxOf(0.0, split.ue150 - toSubtract).also { toSubtract = maxOf(0.0, toSubtract - split.ue150) }
+                    val u150Work = maxOf(0.0, split.ue150 - toSubtract)
 
                     if (usedLinesCount == 0) {
                         paint.textSize = 7f
@@ -245,6 +246,17 @@ object MontageReportGenerator {
             } catch (_: Exception) {}
         }
 
+        if (!kundenSignatureBase64.isNullOrBlank()) {
+            try {
+                val bytes = Base64.decode(kundenSignatureBase64, Base64.DEFAULT)
+                val sigBitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+                if (sigBitmap != null) {
+                    // Position der Kundenunterschrift (weiter links auf gleicher Höhe)
+                    canvas.drawBitmap(sigBitmap, null, Rect(20, 491, 140, 551), paint)
+                }
+            } catch (_: Exception) {}
+        }
+
         pdfDocument.finishPage(page)
         val file = File(context.cacheDir, "${vorname}_${nachname}_Montagebericht_${selectedAuftrag.auftragsNummer}_KW${kalenderWoche}_${jahr}.pdf")
         
@@ -280,7 +292,7 @@ object MontageReportGenerator {
     data class OvertimeSplit(val normal: Double, val ue25: Double, val ue50: Double, val ue150: Double)
 
     private fun calculateOvertime(dayOfWeek: Int, isHoliday: Boolean, isSpecial150: Boolean, alreadyWorked: Double, duration: Double): OvertimeSplit {
-        // Feiertage (inkl. 1. Mai) -> 150%
+        // Feiertage (inkl. 1. Mai) → 150%
         if (isSpecial150 || isHoliday) return OvertimeSplit(normal = 0.0, ue25 = 0.0, ue50 = 0.0, ue150 = duration)
 
         var n = 0.0; var u25 = 0.0; var u50 = 0.0
@@ -294,17 +306,16 @@ object MontageReportGenerator {
             else -> Pair(8.0, 10.0) // Fallback auf Standardwoche
         }
 
-        val start = alreadyWorked
         val end = alreadyWorked + duration
 
         // 1. Normalzeit-Bereich
-        if (start < limitN) {
-            n = minOf(end, limitN) - start
+        if (alreadyWorked < limitN) {
+            n = minOf(end, limitN) - alreadyWorked
         }
 
         // 2. 25% Überstunden-Bereich
         if (end > limitN) {
-            val zoneStart = maxOf(start, limitN)
+            val zoneStart = maxOf(alreadyWorked, limitN)
             if (zoneStart < limit25) {
                 u25 = minOf(end, limit25) - zoneStart
             }
@@ -312,7 +323,7 @@ object MontageReportGenerator {
 
         // 3. 50% Überstunden-Bereich
         if (end > limit25) {
-            u50 = end - maxOf(start, limit25)
+            u50 = end - maxOf(alreadyWorked, limit25)
         }
 
         return OvertimeSplit(n, u25, u50, 0.0)

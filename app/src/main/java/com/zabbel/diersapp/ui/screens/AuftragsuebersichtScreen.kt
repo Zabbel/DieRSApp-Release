@@ -34,6 +34,7 @@ fun AuftragsuebersichtScreen(
     onMontagebericht: () -> Unit,
     onNavigateToStatistik: () -> Unit,
     onNavigateToArchiv: () -> Unit,
+    onNavigateToKundenUnterschriften: () -> Unit,
     onNavigateToSettings: () -> Unit
 ) {
     val auftraege by viewModel.auftraege.collectAsStateWithLifecycle()
@@ -68,6 +69,7 @@ fun AuftragsuebersichtScreen(
                 onMontagebericht = onMontagebericht,
                 onNavigateToStatistik = onNavigateToStatistik,
                 onNavigateToArchiv = onNavigateToArchiv,
+                onNavigateToKundenUnterschriften = onNavigateToKundenUnterschriften,
                 onNavigateToSettings = onNavigateToSettings
             )
         },

@@ -224,6 +224,10 @@ class AuftragViewModel @Inject constructor(
             }
     }
 
+    fun getArbeitszeitenInPeriodRaw(startTimestamp: Long, endTimestamp: Long): Flow<List<Arbeitszeit>> {
+        return repository.getArbeitszeitenInPeriod(startTimestamp, endTimestamp)
+    }
+
     fun getArbeitszeitenForAuftrag(auftragId: Long): Flow<List<Arbeitszeit>> {
         return repository.getArbeitszeitenForAuftrag(auftragId)
     }
@@ -382,6 +386,19 @@ class AuftragViewModel @Inject constructor(
                 
                 remainingBudget -= hoursToCopy
             }
+        }
+    }
+
+    fun getKundenUnterschrift(auftragId: Long, jahr: Int, kw: Int): Flow<KundenUnterschrift?> {
+        return repository.getKundenUnterschrift(auftragId, jahr, kw)
+    }
+
+    val allKundenUnterschriften: StateFlow<List<KundenUnterschrift>> = repository.getAllKundenUnterschriften()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    fun saveKundenUnterschrift(auftragId: Long, jahr: Int, kw: Int, base64: String) {
+        viewModelScope.launch {
+            repository.saveKundenUnterschrift(KundenUnterschrift(auftragId, jahr, kw, base64))
         }
     }
 

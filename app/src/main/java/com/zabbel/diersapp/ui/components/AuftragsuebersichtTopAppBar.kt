@@ -8,6 +8,7 @@ import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Folder
+import androidx.compose.material.icons.filled.Draw
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.getValue
@@ -22,6 +23,7 @@ fun AuftragsuebersichtTopAppBar(
     onMontagebericht: () -> Unit,
     onNavigateToStatistik: () -> Unit,
     onNavigateToArchiv: () -> Unit,
+    onNavigateToKundenUnterschriften: () -> Unit,
     onNavigateToSettings: () -> Unit
 ) {
     var showMenu by remember { mutableStateOf(false) }
@@ -80,6 +82,16 @@ fun AuftragsuebersichtTopAppBar(
                         onClick = {
                             showMenu = false
                             onNavigateToArchiv()
+                        }
+                    )
+                    DropdownMenuItem(
+                        text = { Text("Kundenunterschriften") },
+                        leadingIcon = {
+                            Icon(Icons.Default.Draw, contentDescription = null)
+                        },
+                        onClick = {
+                            showMenu = false
+                            onNavigateToKundenUnterschriften()
                         }
                     )
                     HorizontalDivider()

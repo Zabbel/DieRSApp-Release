@@ -52,6 +52,8 @@ import com.zabbel.diersapp.ui.screens.SettingsScreen
 import com.zabbel.diersapp.ui.screens.ArchivScreen
 import com.zabbel.diersapp.ui.screens.StatistikScreen
 import com.zabbel.diersapp.ui.screens.WochenberichtScreen
+import com.zabbel.diersapp.ui.screens.UnterschriftenListScreen
+import com.zabbel.diersapp.ui.screens.KundenSignatureScreen
 import com.zabbel.diersapp.ui.theme.DieRSAppTheme
 import com.zabbel.diersapp.util.OCRService
 import com.zabbel.diersapp.util.OrderParser
@@ -304,6 +306,7 @@ fun AppContent(startScreen: NextScreen, auftragViewModel: AuftragViewModel, appS
                         onMontagebericht = { navController.navigate("montagebericht") },
                         onNavigateToStatistik = { navController.navigate("statistik") },
                         onNavigateToArchiv = { navController.navigate("archiv") },
+                        onNavigateToKundenUnterschriften = { navController.navigate("kunden_unterschriften") },
                         onNavigateToSettings = { navController.navigate("user_settings") }
                     )
                 }
@@ -494,6 +497,37 @@ fun AppContent(startScreen: NextScreen, auftragViewModel: AuftragViewModel, appS
                     val id = backStackEntry.arguments?.getLong("auftragId") ?: 0L
                     auftragViewModel.allAuftraege.collectAsStateWithLifecycle().value.find { it.id == id }?.let { auftrag ->
                         BestellungScreen(auftrag = auftrag, viewModel = auftragViewModel, onBack = { navController.popBackStack() })
+                    }
+                }
+                composable("kunden_unterschriften") {
+                    UnterschriftenListScreen(
+                        viewModel = auftragViewModel,
+                        onBack = { navController.popBackStack() },
+                        onNavigateToSignature = { auftragId, jahr, kw ->
+                            navController.navigate("kunden_signature/$auftragId/$jahr/$kw")
+                        }
+                    )
+                }
+                composable(
+                    "kunden_signature/{auftragId}/{jahr}/{kw}",
+                    arguments = listOf(
+                        navArgument("auftragId") { type = NavType.LongType },
+                        navArgument("jahr") { type = NavType.IntType },
+                        navArgument("kw") { type = NavType.IntType }
+                    )
+                ) { backStackEntry ->
+                    val id = backStackEntry.arguments?.getLong("auftragId") ?: 0L
+                    val jahr = backStackEntry.arguments?.getInt("jahr") ?: 0
+                    val kw = backStackEntry.arguments?.getInt("kw") ?: 0
+                    auftragViewModel.allAuftraege.collectAsStateWithLifecycle().value.find { it.id == id }?.let { auftrag ->
+                        KundenSignatureScreen(
+                            auftrag = auftrag,
+                            jahr = jahr,
+                            kw = kw,
+                            viewModel = auftragViewModel,
+                            onBack = { navController.popBackStack() },
+                            onSaved = { navController.popBackStack() }
+                        )
                     }
                 }
                 composable("user_settings") {
