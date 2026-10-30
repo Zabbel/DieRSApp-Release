@@ -13,6 +13,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavController
+import android.net.Uri
 import com.zabbel.diersapp.data.model.Betriebsauftrag
 import com.zabbel.diersapp.data.model.Bestellung
 import com.zabbel.diersapp.viewmodel.AuftragViewModel
@@ -25,6 +27,7 @@ import java.util.*
 fun BestellungScreen(
     auftrag: Betriebsauftrag,
     viewModel: AuftragViewModel,
+    navController: NavController,
     onBack: () -> Unit
 ) {
     val userSettings by viewModel.userSettings.collectAsStateWithLifecycle()
@@ -98,11 +101,8 @@ fun BestellungScreen(
                             "${context.packageName}.provider",
                             file
                         )
-                        val intent = android.content.Intent(android.content.Intent.ACTION_VIEW).apply {
-                            setDataAndType(uri, "application/pdf")
-                            addFlags(android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                        }
-                        context.startActivity(android.content.Intent.createChooser(intent, "PDF öffnen"))
+                        val encodedUri = Uri.encode(uri.toString())
+                        navController.navigate("pdf_viewer/$encodedUri")
                     }
                 },
                 icon = { Icon(Icons.Default.PictureAsPdf, null) },

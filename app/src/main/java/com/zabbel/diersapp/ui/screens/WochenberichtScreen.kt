@@ -220,7 +220,8 @@ fun WochenberichtScreen(
                 ) {
                     val sortedDays = weeklyWorkHours.keys.sorted()
                     items(sortedDays) { timestamp ->
-                        val entries = weeklyWorkHours[timestamp] ?: emptyList()
+                        // Chronologisch nach Uhrzeit sortieren
+                        val entries = weeklyWorkHours[timestamp]?.sortedBy { it.vonUhrzeit } ?: emptyList()
                         val isOverflow = overflowDays.contains(timestamp)
                         val nextDay = timestamp + 24 * 60 * 60 * 1000L
                         val hasNextDayEntries = weeklyWorkHours.containsKey(nextDay) && weeklyWorkHours[nextDay]?.isNotEmpty() == true

@@ -2,6 +2,11 @@ package com.zabbel.diersapp.viewmodel
 
 import android.net.Uri
 import android.util.Base64
+import android.graphics.pdf.PdfRenderer
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.Color
+import android.content.Context
 import androidx.biometric.BiometricPrompt
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -19,6 +24,10 @@ import kotlinx.coroutines.launch
 import java.util.*
 import javax.inject.Inject
 import javax.crypto.Cipher
+import java.io.File
+import java.io.FileOutputStream
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 @HiltViewModel
 class AuftragViewModel @Inject constructor(
@@ -81,6 +90,66 @@ class AuftragViewModel @Inject constructor(
 
     fun addCapturedImage(uri: Uri) {
         capturedImageUris = capturedImageUris + uri
+    }
+
+    fun importPdfToImages(context: Context, pdfUri: Uri) {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val fd = context.contentResolver.openFileDescriptor(pdfUri, "r") ?: return@launch
+                val renderer = PdfRenderer(fd)
+                
+                // Wir importieren maximal die ersten 5 Seiten, um Speicher zu schonen
+                val pageCount = minOf(renderer.pageCount, 5)
+                val newUris = mutableListOf<Uri>()
+
+                for (i in 0 until pageCount) {
+                    val page = renderer.openPage(i)
+                    // Hohe Auflösung für gutes OCR
+                    val width = (context.resources.displayMetrics.densityDpi / 72f * page.width * 2.5f).toInt()
+                    val height = (context.resources.displayMetrics.densityDpi / 72f * page.height * 2.5f).toInt()
+                    
+                    // Hardware Limits beachten
+                    var finalWidth = width
+                    var finalHeight = height
+                    val maxDimension = 2500
+                    if (finalWidth > maxDimension || finalHeight > maxDimension) {
+                        val ratio = finalWidth.toFloat() / finalHeight.toFloat()
+                        if (finalWidth > finalHeight) {
+                            finalWidth = maxDimension
+                            finalHeight = (maxDimension / ratio).toInt()
+                        } else {
+                            finalHeight = maxDimension
+                            finalWidth = (maxDimension * ratio).toInt()
+                        }
+                    }
+
+                    val bitmap = androidx.core.graphics.createBitmap(finalWidth, finalHeight, Bitmap.Config.ARGB_8888)
+                    val canvas = Canvas(bitmap)
+                    canvas.drawColor(Color.WHITE) // PDF Hintergrund ist oft transparent, OCR braucht Weiß
+                    
+                    page.render(bitmap, null, null, PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY)
+                    page.close()
+
+                    // Bitmap als temporäre Datei speichern
+                    val file = File(context.cacheDir, "pdf_import_${System.currentTimeMillis()}_$i.jpg")
+                    FileOutputStream(file).use { out ->
+                        bitmap.compress(Bitmap.CompressFormat.JPEG, 90, out)
+                    }
+                    bitmap.recycle()
+                    
+                    newUris.add(Uri.fromFile(file))
+                }
+                
+                renderer.close()
+                fd.close()
+
+                withContext(Dispatchers.Main) {
+                    capturedImageUris = capturedImageUris + newUris
+                }
+            } catch (e: Exception) {
+                android.util.Log.e("RS_PDF_Import", "Fehler beim Importieren der PDF", e)
+            }
+        }
     }
 
     fun clearCapturedImages() {
@@ -387,10 +456,6 @@ class AuftragViewModel @Inject constructor(
                 remainingBudget -= hoursToCopy
             }
         }
-    }
-
-    fun getKundenUnterschrift(auftragId: Long, jahr: Int, kw: Int): Flow<KundenUnterschrift?> {
-        return repository.getKundenUnterschrift(auftragId, jahr, kw)
     }
 
     val allKundenUnterschriften: StateFlow<List<KundenUnterschrift>> = repository.getAllKundenUnterschriften()

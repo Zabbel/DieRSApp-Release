@@ -29,6 +29,7 @@ import com.zabbel.diersapp.viewmodel.AuftragViewModel
 fun AuftragsuebersichtScreen(
     viewModel: AuftragViewModel,
     onScanClick: () -> Unit,
+    onImportPdfClick: () -> Unit,
     onAuftragClick: (Long) -> Unit,
     onGenerateWeeklyReport: () -> Unit,
     onMontagebericht: () -> Unit,
@@ -67,6 +68,7 @@ fun AuftragsuebersichtScreen(
             AuftragsuebersichtTopAppBar(
                 onGenerateWeeklyReport = onGenerateWeeklyReport,
                 onMontagebericht = onMontagebericht,
+                onImportPdf = onImportPdfClick,
                 onNavigateToStatistik = onNavigateToStatistik,
                 onNavigateToArchiv = onNavigateToArchiv,
                 onNavigateToKundenUnterschriften = onNavigateToKundenUnterschriften,

@@ -294,12 +294,26 @@ fun AppContent(startScreen: NextScreen, auftragViewModel: AuftragViewModel, appS
                     val permissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
                         if (isGranted) navController.navigate("camera_capture")
                     }
+                    
+                    val pdfPickerLauncher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+                        if (uri != null) {
+                            auftragViewModel.clearCapturedImages()
+                            auftragViewModel.importPdfToImages(context, uri)
+                            // ViewModel importPdfToImages setzt die Uris und navigiert uns dann via State oder wir navigieren direkt
+                            // In diesem Fall navigieren wir direkt, und der CropScreen wartet auf die Uris
+                            navController.navigate("crop_screen")
+                        }
+                    }
+
                     AuftragsuebersichtScreen(
                         viewModel = auftragViewModel,
                         onScanClick = {
                             if (ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
                                 navController.navigate("camera_capture")
                             } else permissionLauncher.launch(Manifest.permission.CAMERA)
+                        },
+                        onImportPdfClick = {
+                            pdfPickerLauncher.launch("application/pdf")
                         },
                         onAuftragClick = { id -> navController.navigate("auftrag_detail/$id") },
                         onGenerateWeeklyReport = { navController.navigate("weekly_report") },
@@ -496,7 +510,7 @@ fun AppContent(startScreen: NextScreen, auftragViewModel: AuftragViewModel, appS
                 composable("bestellung/{auftragId}", arguments = listOf(navArgument("auftragId") { type = NavType.LongType })) { backStackEntry ->
                     val id = backStackEntry.arguments?.getLong("auftragId") ?: 0L
                     auftragViewModel.allAuftraege.collectAsStateWithLifecycle().value.find { it.id == id }?.let { auftrag ->
-                        BestellungScreen(auftrag = auftrag, viewModel = auftragViewModel, onBack = { navController.popBackStack() })
+                        BestellungScreen(auftrag = auftrag, viewModel = auftragViewModel, navController = navController, onBack = { navController.popBackStack() })
                     }
                 }
                 composable("kunden_unterschriften") {

@@ -9,6 +9,7 @@ import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.filled.Draw
+import androidx.compose.material.icons.filled.PictureAsPdf
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.getValue
@@ -24,6 +25,7 @@ fun AuftragsuebersichtTopAppBar(
     onNavigateToStatistik: () -> Unit,
     onNavigateToArchiv: () -> Unit,
     onNavigateToKundenUnterschriften: () -> Unit,
+    onImportPdf: () -> Unit,
     onNavigateToSettings: () -> Unit
 ) {
     var showMenu by remember { mutableStateOf(false) }
@@ -64,6 +66,18 @@ fun AuftragsuebersichtTopAppBar(
                             onMontagebericht()
                         }
                     )
+                    HorizontalDivider()
+                    DropdownMenuItem(
+                        text = { Text("Aus PDF importieren") },
+                        leadingIcon = {
+                            Icon(Icons.Default.PictureAsPdf, contentDescription = null)
+                        },
+                        onClick = {
+                            showMenu = false
+                            onImportPdf()
+                        }
+                    )
+                    HorizontalDivider()
                     DropdownMenuItem(
                         text = { Text("Statistik") },
                         leadingIcon = {
