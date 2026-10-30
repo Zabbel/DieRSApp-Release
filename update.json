@@ -1,6 +1,6 @@
 {
-  "versionCode": 13,
-  "versionName": "2.1",
-  "apkUrl": "https://github.com/Zabbel/DieRSApp-Release/releases/download/V2.1/app-debug.apk",
-  "releaseNotes": "Kundenunterschrift hinzugefügt!"
+  "versionCode": 14,
+  "versionName": "2.2",
+  "apkUrl": "https://github.com/Zabbel/DieRSApp-Release/releases/download/V2.2/app-debug.apk",
+  "releaseNotes": "Diverse Bugfixes und PDF-Import hinzugefügt!"
 }
