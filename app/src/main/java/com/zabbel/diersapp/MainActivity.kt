@@ -313,6 +313,7 @@ fun AppContent(startScreen: NextScreen, auftragViewModel: AuftragViewModel, appS
                             } else permissionLauncher.launch(Manifest.permission.CAMERA)
                         },
                         onImportPdfClick = {
+                            appStateViewModel.setIntentionalBackground(true)
                             pdfPickerLauncher.launch("application/pdf")
                         },
                         onAuftragClick = { id -> navController.navigate("auftrag_detail/$id") },
